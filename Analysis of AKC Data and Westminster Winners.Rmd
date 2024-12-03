@@ -1,0 +1,310 @@
+---
+title: "Analysis of AKC Data and Westminster Winners"
+author: "Lindsey Ukishima"
+date: "December 9, 2024"
+output: html_document
+---
+
+# Introduction
+
+This document performs an analysis of American Kennel Club (AKC) data and Westminster Kennel Club Dog Show winners. It explores relationships between various attributes and the popularity of dog breeds using linear regression models. Additionally, it extracts and visualizes data about past Westminster winners and dog breeds.
+
+---
+# Install packages (if needed)
+
+### Packages needed: 
+1. readr
+2. rvest
+3. dplyr
+4. ggplot2
+5. plotly
+
+
+# Data Processing and Cleaning
+
+### Loading AKC Data
+We load the AKC data directly from a GitHub repository found here (https://github.com/tmfilho/akcdata) using the `readr` package.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(readr)
+
+# Load AKC data from GitHub
+raw_url <- "https://raw.githubusercontent.com/tmfilho/akcdata/master/data/akc-data-latest.csv"
+akc_data <- read_csv(raw_url)
+
+# View the first few rows of the dataset
+head(akc_data)
+```
+
+
+# Cleaning AKC Data
+To ensure the data is usable for analysis, we clean it by:
+
+Removing rows with missing values for key variables.
+Converting non-numeric entries in the popularity column to NA and replacing them with numeric values.
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Remove rows with any NA, NaN, or Inf
+cleaned_data <- akc_data[complete.cases(akc_data$popularity, akc_data$trainability_value, akc_data$energy_level_value), ]
+
+# Handle non-numeric values in popularity
+cleaned_data$popularity[cleaned_data$popularity %in% c("unknown", "N/A", "NA")] <- NA
+cleaned_data$popularity <- as.numeric(as.character(cleaned_data$popularity))
+
+# Remove remaining NAs
+cleaned_data <- cleaned_data[!is.na(cleaned_data$popularity), ]
+
+# Save cleaned data to a CSV
+write.csv(cleaned_data, "cleaned_data.csv", row.names = FALSE)
+```
+
+# Linear Regression Analysis
+## Overview
+We fit several linear regression models to analyze how various breed characteristics influence their popularity or other attributes, such as maximum height and life expectancy.
+
+
+### Popularity based on trainability and energy level
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_popularity <- lm(popularity ~ trainability_value + energy_level_value, data = cleaned_data)
+summary(model_popularity)
+```
+### Popularity based on maximum life expectancy
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_popularity_age <- lm(popularity ~ max_expectancy, data = cleaned_data)
+summary(model_popularity_age)
+```
+
+### Popularity based on grooming
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_popularity_grooming <- lm(popularity ~ grooming_frequency_value + shedding_value, data = cleaned_data)
+summary(model_popularity_grooming)
+```
+
+### Dog height based on energy level and trainability
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_height <- lm(max_height ~ energy_level_value + trainability_value, data = cleaned_data)
+summary(model_height)
+```
+
+### Dog weight based on energy level and trainability
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_weight <- lm(max_weight ~ energy_level_value + trainability_value, data = cleaned_data)
+summary(model_weight)
+```
+
+### Maximum life expectancy based on energy level and trainability
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+model_life_expectancy <- lm(max_expectancy ~ energy_level_value + trainability_value, data = cleaned_data)
+summary(model_life_expectancy)
+```
+
+
+## Interpreting summary() Output
+Linear regression models were built to explore relationships between variables such as popularity, energy level, trainability, and other characteristics. Each model's results are summarized using the summary() function. When examining the summary() of a linear model in R, here are the main points to focus on:
+
+1. Coefficients Table:
+  - Estimate: The estimated effect of each predictor variable on the response variable. For example, if the coefficient for trainability_value is 2, then a 1-unit increase in trainability_value is associated with a 2-unit increase in the predicted value.
+  - Significance Codes (*):
+  - *** indicates a p-value < 0.001 (highly significant).
+  - ** indicates a p-value < 0.01.
+  - * indicates a p-value < 0.05.
+  - No stars imply the predictor is not statistically significant (p-value ≥ 0.05).
+  - Significance suggests a strong likelihood that the predictor has a meaningful relationship with the response variable.
+
+2. Residuals:
+  - Provides information about the distribution of residuals (differences between observed and predicted values). Ideally, these should be centered around zero.
+
+3. R-squared:
+  - R-squared: Indicates the proportion of variance in the response variable that is explained by the predictors. Values closer to 1 indicate a better fit.
+  - Adjusted R-squared: Similar to R-squared but adjusts for the number of predictors, making it a more accurate metric for model performance.
+
+4. F-statistic and p-value:
+  - Tests the overall significance of the model. A small p-value suggests that at least one of the predictors is significantly associated with the response variable.
+
+# ANOVA Analysis of Group Effects
+### Exploring Group Differences
+We perform ANOVA to test whether groups have significant differences in trainability and energy levels.
+
+
+### ANOVA testing trainability by group
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+anova_trainability_group <- aov(trainability_value ~ group, data = cleaned_data)
+summary(anova_trainability_group)
+```
+
+### ANOVA testing energy level by group
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+anova_energy_group <- aov(energy_level_value ~ group, data = cleaned_data)
+summary(anova_energy_group)
+```
+
+## Interpreting summary() Output for ANOVA
+The summary() function for an ANOVA model (aov) provides a table that helps assess whether the means of the groups being compared are significantly different. Here's how to interpret the key elements:
+
+1. Df (Degrees of Freedom):
+  - Represents the number of independent values that can vary.
+  - Includes two components:
+     - Between Groups: The variability due to the differences between the group means.
+     - Residuals (Within Groups): The variability within each group.
+2. Sum Sq (Sum of Squares):
+  - Measures the variability:
+     - Between Groups (Sum Sq): How much of the variability in the response variable is explained by the grouping variable.
+     - Residuals (Sum Sq): The remaining variability not explained by the grouping variable.
+     
+3. Mean Sq (Mean Squares):
+  - Calculated as Sum Sq / Df. Provides an average measure of variability.
+
+4. F value:
+  - The ratio of Mean Sq (Between Groups) to Mean Sq (Residuals).
+  - Larger values indicate greater variability between groups relative to within groups, suggesting a potential significant difference.
+  
+5. Pr(>F):
+  - The p-value for the F-statistic.
+  - Indicates whether the differences between group means are statistically significant.
+  - p < 0.05: Suggests significant differences between groups.
+  - p < 0.01 or p < 0.001: Indicates stronger evidence for significant differences.
+  - p ≥ 0.05: Suggests no significant difference between groups.
+
+
+# Data Extraction: Westminster Winners
+### Extracting Data from Wikipedia
+We scrape a Wikipedia table to analyze Westminster Kennel Club Dog Show winners (found here: https://en.wikipedia.org/wiki/List_of_Best_in_Show_winners_of_the_Westminster_Kennel_Club_Dog_Show). The table is cleaned and saved for further analysis.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(rvest)
+library(dplyr)
+
+# Scrape the table
+url <- "https://en.wikipedia.org/wiki/List_of_Best_in_Show_winners_of_the_Westminster_Kennel_Club_Dog_Show"
+webpage <- read_html(url)
+table_nodes <- webpage %>% html_nodes("table")
+desired_table <- table_nodes[[2]] %>% html_table(fill = TRUE)
+
+# Clean column names
+colnames(desired_table) <- c("Year", "Winner", "Images", "Breed", "Group", "Owner", "Ref(s)")
+```
+
+### Cleaning and Combining Groups
+During the analysis of Westminster winners, it was observed that some group names (e.g., "Herding" and "Herding[A]") and breed names (e.g. ""Spaniel (Cocker) ASCOB[B]", "Spaniel (Cocker) Black[B]", and "Spaniel (Cocker) Parti[B]") were treated as distinct categories due to the presence of reference links from the Wikipedia page. To resolve this issue, we combined these entries into a single category using the gsub function.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Combine groups with and without "[A]" into a single category
+desired_table$Group <- gsub("\\[A\\]", "", desired_table$Group)
+
+# Combine different versions of "Spaniel (Cocker)"
+desired_table$Breed <- gsub("Spaniel \\(Cocker\\).*", "Spaniel (Cocker)", desired_table$Breed)
+
+```
+
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Save the cleaned table
+write.csv(desired_table, "westminster_best_in_show.csv", row.names = FALSE)
+```
+
+# Visualizations
+### Winners by Group
+We summarize and visualize the number of winners from each group.
+
+```{r, fig.width=10,fig.height=6, echo = FALSE, message=FALSE, warning=FALSE}
+# Count and visualize winners by group
+group_counts <- table(desired_table$Group)
+group_summary <- as.data.frame(group_counts)
+colnames(group_summary) <- c("Group", "Number of Winners")
+
+# Bar plot
+library(ggplot2)
+ggplot(group_summary, aes(x = Group, y = `Number of Winners`, fill = Group)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Number of Winners from Each Group", x = "Group", y = "Number of Winners") +
+  theme(axis.text.x = element_text(angle = 0))
+```
+
+### Winners by Breed
+Similarly, we summarize and visualize the number of winners by breed.
+
+```{r, fig.width=12,fig.height=6, echo = FALSE, message=FALSE, warning=FALSE}
+# Count and visualize winners by breed
+breed_counts <- table(desired_table$Breed)
+breed_summary <- as.data.frame(breed_counts)
+colnames(breed_summary) <- c("Breed", "Number of Winners")
+
+# Bar plot
+ggplot(breed_summary, aes(x = Breed, y = `Number of Winners`, fill = Breed)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Number of Winners from Each Breed", x = "Breed", y = "Number of Winners") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+### Graphing Group vs Popularity
+We summarize and visualize the average popularity of each group.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Calculate the average popularity for each group
+group_popularity <- cleaned_data %>%
+  group_by(group) %>%
+  summarize(Average_Popularity = mean(popularity, na.rm = TRUE))
+
+# Create the bar plot
+ggplot(group_popularity, aes(x = reorder(group, Average_Popularity), y = Average_Popularity, fill = group)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Average Popularity by Group", x = "Group", y = "Average Popularity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+### Popularity vs Trainability with Linear Regression Line
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Scatter plot with regression line for Popularity vs Trainability
+ggplot(cleaned_data, aes(x = trainability_value, y = popularity)) +
+  geom_point(aes(color = group), alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  theme_minimal() +
+  labs(title = "Popularity vs Trainability with Regression Line", x = "Trainability", y = "Popularity") +
+  theme(legend.position = "bottom")
+```
+
+
+### Popularity vs Energy Level with Linear Regression Line
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Scatter plot with regression line for Popularity vs Energy Level
+ggplot(cleaned_data, aes(x = energy_level_value, y = popularity)) +
+  geom_point(aes(color = group), alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  theme_minimal() +
+  labs(title = "Popularity vs Energy Level with Regression Line", x = "Energy Level", y = "Popularity") +
+  theme(legend.position = "bottom")
+```
+
+### Interactive 3-D plot of predicted popularity given trainability and energy level
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(plotly)
+
+# Fit the linear model
+lm_model <- lm(popularity ~ trainability_value + energy_level_value, data = cleaned_data)
+
+# Create predicted values from the linear model
+cleaned_data$predicted_popularity <- predict(lm_model, newdata = cleaned_data)
+
+# Create an interactive 3D plot with predicted popularity
+interactive_plot <- plot_ly(x = cleaned_data$trainability_value, 
+                y = cleaned_data$energy_level_value, 
+                z = cleaned_data$predicted_popularity, 
+                type = "scatter3d", mode = "markers", 
+                color = cleaned_data$predicted_popularity,
+                colors = c("#029c01","#ea0101","#7815da"),
+                marker = list(colorbar = list(title = "Predicted Popularity"))) %>%
+  layout(scene = list(xaxis = list(title = "X - Trainability", titlefont = list(size = 10)),
+                      yaxis = list(title = "Y - Energy Level", titlefont = list(size = 10)),
+                      zaxis = list(title = "Z - Predicted Popularity", titlefont = list(size = 10))),
+         title = "3D Plot of Predicted Popularity vs Trainability and Energy",
+         plot_bgcolor = "#bababa")
+
+interactive_plot
+```
+

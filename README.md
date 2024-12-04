@@ -43,4 +43,5 @@ The R Shiny app allows for interactive exploration of the dataset. While the app
 * Shiny App Bugs: Some features in the R Shiny app may not work as expected. Bug fixes are ongoing.
 * Cross-Platform Dependencies: Ensure all required packages for both R and Python environments are installed before running the files.
 ### Notes
-The repository includes pre-generated datasets (.csv files) for convenience, but running Analysis of `AKC Data and Westminster Winners.Rmd` ensures that these files are up-to-date.
+* The repository includes pre-generated datasets (.csv files) for convenience, but running Analysis of `AKC Data and Westminster Winners.Rmd` ensures that these files are up-to-date.
+* Parts of this project, including code cleaning, labeling, and enhancing readability for reproducibility, were assisted by a large language model (LLM). This collaboration aimed to improve the clarity and organization of the code for educational purposes.

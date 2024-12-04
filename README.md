@@ -4,20 +4,26 @@
 This project aims to help users find similar dog breeds based on a selected breed or specified preferences. It includes a data preprocessing step, an interactive R Shiny app, and a Python-based analysis script.
 
 ### File Structure
-* cleaned_data.csv : The pre-generated, cleaned dataset (originally from https://github.com/tmfilho/akcdata/tree/master/data) for analysis. This was generated using the R Markdown file.
-* westminster_best_in_show.csv : The pre-generated, cleaned dataset web-scraped from https://en.wikipedia.org/wiki/List_of_Best_in_Show_winners_of_the_Westminster_Kennel_Club_Dog_Show.
-* Analysis of AKC Data and Westminster Winners.Rmd : An R Markdown file that processes raw data and generates cleaned datasets for analysis. It should be run first to create up-to-date data files. Performs linear regression analysis, ANOVAs, and visualizations.
-* Analysis of AKC Data and Westminster Winners.ipynb : A Python notebook for running machine learning algorithms for clustering dog breeds and finding similar dog breeds based on name or user-defined features.
-* AKC_app.R : An R Shiny app for interactive exploration of similar dog breeds based on name or user-defined features. The app is functional for similarity based on name, but contains unresolved bugs with user-defined features.
+* `cleaned_data.csv`: The pre-generated, cleaned dataset (originally from https://github.com/tmfilho/akcdata/tree/master/data) for analysis. This was generated using the R Markdown file.
+* `westminster_best_in_show.csv`: The pre-generated, cleaned dataset web-scraped from https://en.wikipedia.org/wiki/List_of_Best_in_Show_winners_of_the_Westminster_Kennel_Club_Dog_Show.
+* `Analysis of AKC Data and Westminster Winners.Rmd`: An R Markdown file that processes raw data and generates cleaned datasets for analysis. It should be run first to create up-to-date data files. Performs linear regression analysis, ANOVAs, and visualizations.
+* `Analysis of AKC Data and Westminster Winners.ipynb`: A Python notebook for running machine learning algorithms for clustering dog breeds and finding similar dog breeds based on name or user-defined features.
+* `AKC_app.R`: An R Shiny app for interactive exploration of similar dog breeds based on name or user-defined features. The app is functional for similarity based on name, but contains unresolved bugs with user-defined features.
 
 ### Prerequisites
 #### R Environment
-* tidyverse
-* knitr
-* shiny (for the app)
+* readr
+* rvest
+* dplyr
+* ggplot2
+* plotly
+* shiny
+* caret
+* FNN
 #### Python Environment
 * pandas
 * numpy
+* matplotlib
 * scikit-learn
 ### Instructions
 1. Run the R Markdown File (`Analysis of AKC Data and Westminster Winners.Rmd`)
@@ -30,7 +36,7 @@ Open the notebook and execute its cells to analyze the data and find similar dog
 
 * Selected breed name
 * User-defined features such as popularity, trainability, or energy level.
-3. Optional: Use the R Shiny App (AKC_app.R)
+3. Optional: Use the R Shiny App (`AKC_app.R`)
 The R Shiny app allows for interactive exploration of the dataset. While the app is functional, it currently has unresolved bugs that may impact its usability.
 
 #### Known Issues
